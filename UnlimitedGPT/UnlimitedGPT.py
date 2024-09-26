@@ -300,7 +300,23 @@ class ChatGPT:
         """
         Gets the conversation ID.
         """
-        logs_raw = self.driver.get_log("performance")
+        try:
+            logs_raw = self.driver.get_log('performance')
+        except Exception as e:
+            self.logger.error(f"Failed to get performance logs: {str(e)}")
+            logs_raw = []
+
+        if not logs_raw:
+            self.logger.warning("No performance logs found. Trying to get browser logs...")
+            try:
+                logs_raw = self.driver.get_log('browser')
+            except Exception as e:
+                self.logger.error(f"Failed to get browser logs: {str(e)}")
+                logs_raw = []
+
+        if not logs_raw:
+            self.logger.error("No logs found. Unable to get conversation ID.")
+            return
 
         conv_response_id = next(
             log_["params"]["requestId"]
