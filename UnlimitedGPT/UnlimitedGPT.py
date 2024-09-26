@@ -278,10 +278,10 @@ class ChatGPT:
         if response[0] != "{":
             response = self.driver.find_element(By.TAG_NAME, "pre").text
         response = loads(response)
-        if (not response) or (
-            "error" in response and response["error"] == "RefreshAccessTokenError"
-        ):
-            raise ValueError("Invalid session token")
+        # if (not response) or (
+        #     "error" in response and response["error"] == "RefreshAccessTokenError"
+        # ):
+        #     raise ValueError("Invalid session token")
         self.logger.debug("Authorization is valid")
 
         self.logger.debug("Closing tab...")
