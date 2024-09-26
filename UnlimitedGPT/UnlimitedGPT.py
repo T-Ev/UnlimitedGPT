@@ -155,12 +155,6 @@ class ChatGPT:
         options = ChromeOptions()
         options.add_argument("--window-size=1024,768")
         options.add_argument("--disable-popup-blocking")
-        # Enable performance logging
-        options.add_experimental_option("prefs", {
-            "loggingPrefs": {
-                "performance": "ALL"  # Enable all performance logs
-            }
-        })
         if self._proxy:
             options.add_argument(f"--proxy-server={self._proxy}")
         for arg in self._chrome_args:
@@ -437,9 +431,15 @@ class ChatGPT:
         self.logger.debug("Getting conversations...")
         # sleep(1.5)  # Wait for 2 seconds to ensure the page is fully loaded
         logs_raw = self.driver.get_log("performance")
-        while "/backend-api/conversations" not in logs_raw:
+        for _ in range(10):  # Retry up to 10 times
+            if any("/backend-api/conversations" in log["message"] for log in logs_raw):
+                break
             logs_raw = self.driver.get_log("performance")
-            sleep(0.3)
+            sleep(0.2)
+        else:
+            self.logger.debug("Refreshing the driver...")
+            self.driver.refresh()
+            sleep(2)
         sleep(0.2)
         
         datas = (
