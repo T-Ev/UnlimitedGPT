@@ -445,7 +445,7 @@ class ChatGPT:
         for lrr in logs_raw:
             if "/backend-api/conversations" in lrr["message"]:
                 self.logger.debug("FOUND ONEEEEE -------------------------------")
-            # self.logger.debug(lrr)
+                self.logger.debug(lrr)
         
         datas = (
             log_["params"]["requestId"]
