@@ -435,7 +435,7 @@ class ChatGPT:
             Conversations: A list of conversations.
         """
         self.logger.debug("Getting conversations...")
-        sleep(1)  # Wait for 2 seconds to ensure the page is fully loaded
+        sleep(1.5)  # Wait for 2 seconds to ensure the page is fully loaded
         logs_raw = self.driver.get_log("performance")
         
         datas = (
