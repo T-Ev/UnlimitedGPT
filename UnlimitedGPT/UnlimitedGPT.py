@@ -1096,73 +1096,159 @@ class ChatGPT:
         
         return messages
     
-    def download_audio_attachment(self, conversation_id: str, file_id: str) -> Optional[str]:
-        """
-        Download an audio attachment from a conversation.
+    # def download_audio_attachment(self, conversation_id: str, file_id: str) -> Optional[str]:
+    #     """
+    #     Download an audio attachment from a conversation.
 
-        Args:
-        ----------
-            conversation_id (str): The ID of the conversation.
-            file_id (str): The ID of the file to download.
+    #     Args:
+    #     ----------
+    #         conversation_id (str): The ID of the conversation.
+    #         file_id (str): The ID of the file to download.
 
-        Returns:
-        ----------
-            Optional[str]: The path to the downloaded audio file, or None if unsuccessful.
-        """
-        self.logger.debug(f"Downloading audio attachment for conversation {conversation_id}, file {file_id}...")
+    #     Returns:
+    #     ----------
+    #         Optional[str]: The path to the downloaded audio file, or None if unsuccessful.
+    #     """
+    #     self.logger.debug(f"Downloading audio attachment for conversation {conversation_id}, file {file_id}...")
 
-        # JavaScript to fetch the download URL
-        js_script = f"""
-        async function getDownloadUrl() {{
-            const accessToken = window.__remixContext.state.loaderData.root.clientBootstrap.session.accessToken;
-            //alert(accessToken);
-            const response = await fetch('https://chat.openai.com/backend-api/conversation/{conversation_id}/attachment/{file_id}/download', {{
-                method: 'GET',
-                headers: {{
-                    'Authorization': `Bearer ${{accessToken}}`,
-                    'Accept': 'application/json'
-                }}
-            }});
-            const data = await response.json();
-            return data;
-        }}
-        return getDownloadUrl();
-        """
-        res=""
-        try:
-            res = self.driver.execute_script(js_script)
-            download_url = res.download_url
-        except Exception as e:
-            self.logger.error(f"Failed to fetch download URL: {str(e)}")
-            sleep(60)
-            return None
+    #     # JavaScript to fetch the download URL
+    #     js_script = f"""
+    #     async function getDownloadUrl() {{
+    #         const accessToken = window.__remixContext.state.loaderData.root.clientBootstrap.session.accessToken;
+    #         //alert(accessToken);
+    #         const response = await fetch('https://chat.openai.com/backend-api/conversation/{conversation_id}/attachment/{file_id}/download', {{
+    #             headers: {{
+    #                 'Authorization': `Bearer ${{accessToken}}`
+    #             }}
+    #         }});
+    #         const data = await response.json();
+    #         return data;
+    #     }}
+    #     return getDownloadUrl();
+    #     """
+    #     res=""
+    #     try:
+    #         res = self.driver.execute_script(js_script)
+    #         download_url = res.download_url
+    #     except Exception as e:
+    #         self.logger.error(f"Failed to fetch download URL: {str(e)}")
+    #         sleep(60)
+    #         return None
 
-        if not download_url:
-            self.logger.debug("Failed to get download URL")
-            self.logger.debug(res)
-            sleep(60)
-            return None
+    #     if not download_url:
+    #         self.logger.debug("Failed to get download URL")
+    #         self.logger.debug(res)
+    #         sleep(60)
+    #         return None
 
-        # Download the audio file
-        try:
-            response = requests.get(download_url)
-            response.raise_for_status()
+    #     # Download the audio file
+    #     try:
+    #         response = requests.get(download_url)
+    #         response.raise_for_status()
 
-            # Create the audio directory if it doesn't exist
-            audio_dir = Path("audio")
-            audio_dir.mkdir(exist_ok=True)
+    #         # Create the audio directory if it doesn't exist
+    #         audio_dir = Path("audio")
+    #         audio_dir.mkdir(exist_ok=True)
 
-            # Generate a filename based on conversation_id and file_id
-            file_name = f"{conversation_id}_{file_id}.mp3"
-            file_path = audio_dir / file_name
+    #         # Generate a filename based on conversation_id and file_id
+    #         file_name = f"{conversation_id}_{file_id}.mp3"
+    #         file_path = audio_dir / file_name
 
-            # Save the audio file
-            with open(file_path, "wb") as f:
-                f.write(response.content)
+    #         # Save the audio file
+    #         with open(file_path, "wb") as f:
+    #             f.write(response.content)
 
+    #         self.logger.debug(f"Audio file downloaded and saved to {file_path}")
+    #         return str(file_path)
+
+    #     except requests.RequestException as e:
+    #         self.logger.error(f"Failed to download audio file: {str(e)}")
+    #         return None
+
+def download_audio_attachment(self, conversation_id: str, file_id: str) -> Optional[str]:
+    """
+    Download an audio attachment from a conversation.
+
+    Args:
+    ----------
+        conversation_id (str): The ID of the conversation.
+        file_id (str): The ID of the file to download.
+
+    Returns:
+    ----------
+        Optional[str]: The path to the downloaded audio file, or None if unsuccessful.
+    """
+    self.logger.debug(f"Downloading audio attachment for conversation {conversation_id}, file {file_id}...")
+
+    # JavaScript to fetch the download URL using the browser's fetch API
+    js_script = f"""
+    async function getDownloadUrl() {{
+        const response = await fetch('https://chat.openai.com/backend-api/conversation/{conversation_id}/attachment/{file_id}/download', {{
+            method: 'GET',
+            headers: {{
+                'Accept': 'application/json'
+            }},
+            credentials: 'include'
+        }});
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        return url;
+    }}
+    return getDownloadUrl();
+    """
+
+    try:
+        # Execute the JavaScript and wait for the result
+        download_url = WebDriverWait(self.driver, 30).until(
+            lambda driver: driver.execute_script(js_script)
+        )
+    except Exception as e:
+        self.logger.error(f"Failed to fetch download URL: {str(e)}")
+        return None
+
+    if not download_url:
+        self.logger.debug("Failed to get download URL")
+        return None
+
+    # Create the audio directory if it doesn't exist
+    audio_dir = Path("audio")
+    audio_dir.mkdir(exist_ok=True)
+
+    # Generate a filename based on conversation_id and file_id
+    file_name = f"{conversation_id}_{file_id}.mp3"
+    file_path = audio_dir / file_name
+
+    try:
+        # Use Selenium to download the file
+        self.driver.get(download_url)
+        
+        # Wait for the download to complete (you may need to adjust the timeout)
+        WebDriverWait(self.driver, 60).until(
+            EC.presence_of_element_located((By.TAG_NAME, "body"))
+        )
+
+        # Move the downloaded file to the desired location
+        # Note: You'll need to implement a method to find the downloaded file in the default download directory
+        downloaded_file = self.find_downloaded_file(file_name)
+        if downloaded_file:
+            downloaded_file.rename(file_path)
             self.logger.debug(f"Audio file downloaded and saved to {file_path}")
             return str(file_path)
-
-        except requests.RequestException as e:
-            self.logger.error(f"Failed to download audio file: {str(e)}")
+        else:
+            self.logger.error("Failed to find the downloaded file")
             return None
+
+    except Exception as e:
+        self.logger.error(f"Failed to download audio file: {str(e)}")
+        return None
+
+def find_downloaded_file(self, file_name: str) -> Optional[Path]:
+    """
+    Find a downloaded file in the default download directory.
+    You'll need to implement this method based on your system's default download location.
+    """
+    # This is a placeholder implementation. You'll need to adjust this for your specific setup.
+    download_dir = Path.home() / "Downloads"
+    for file in download_dir.glob(f"*{file_name}*"):
+        return file
+    return None
