@@ -41,7 +41,7 @@ class ChatGPT:
         verbose (bool, optional): Whether to enable verbose logging. Defaults to False.
         headless (bool, optional): Whether to run the browser in headless mode. Defaults to False.
         chrome_args (list): Additional arguments for the Chrome browser. Defaults to [].
-        browser_executable_path (str, optional)
+        chrome_driver_path (str, optional): Path to chrome driver https://googlechromelabs.github.io/chrome-for-testing/
 
     Raises:
     ----------
@@ -59,9 +59,11 @@ class ChatGPT:
         verbose: bool = False,
         headless: bool = False,
         chrome_args: list = [],
+        chrome_driver_path: str = "C:\\Users\\Public\\chrome\\chromedriver-win64\\chromedriver.exe"
     ) -> None:
         self._session_token = session_token
         self._conversation_id = conversation_id
+        self._driver_path = chrome_driver_path
         self._proxy = proxy
         self._disable_moderation = disable_moderation
         self._headless = headless
@@ -76,7 +78,7 @@ class ChatGPT:
             raise ValueError("Invalid proxy format")
 
         self._init_browser()
-        # finalize(self, self.__del__)
+        finalize(self, self.__del__)
 
     def __del__(self) -> None:
         """
@@ -158,7 +160,7 @@ class ChatGPT:
         for arg in self._chrome_args:
             options.add_argument(arg)
         try:
-            self.driver = ChatGPTDriver(options=options, headless=self._headless)
+            self.driver = ChatGPTDriver(options=options, headless=self._headless, driver_path=self._driver_path)
         except TypeError as e:
             if str(e) == "expected str, bytes or os.PathLike object, not NoneType":
                 raise ValueError("Chrome installation not found")
@@ -278,14 +280,14 @@ class ChatGPT:
         if response[0] != "{":
             response = self.driver.find_element(By.TAG_NAME, "pre").text
         response = loads(response)
-        # if (not response) or (
-        #     "error" in response and response["error"] == "RefreshAccessTokenError"
-        # ):
-        #     raise ValueError("Invalid session token")
+        if (not response) or (
+            "error" in response and response["error"] == "RefreshAccessTokenError"
+        ):
+            raise ValueError("Invalid session token")
         self.logger.debug("Authorization is valid")
 
         self.logger.debug("Closing tab...")
-        # self.driver.close()
+        self.driver.close()
         self.driver.switch_to.window(original_window)
 
     def _get_conversation_id(self):
