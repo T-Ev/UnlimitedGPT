@@ -436,7 +436,7 @@ class ChatGPT:
         """
         self.logger.debug("Getting conversations...")
         logs_raw = self.driver.get_log("performance")
-
+        self.logger.debug(logs_raw)
         datas = (
             log_["params"]["requestId"]
             for log_ in reversed([loads(lr["message"])["message"] for lr in logs_raw])
