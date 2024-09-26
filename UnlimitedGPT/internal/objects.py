@@ -115,7 +115,7 @@ class SessionData:
 class Conversation:
     """Class representing a conversation."""
 
-    def __init__(self, title: str, id: str, create_time: str):
+    def __init__(self, title: str, id: str, create_time: str, **kwargs):
         """
         Initialize a Conversation object.
 
