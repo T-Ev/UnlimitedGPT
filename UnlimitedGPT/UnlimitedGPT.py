@@ -448,7 +448,7 @@ class ChatGPT:
             self.driver.refresh()
             sleep(2)
             pass
-        sleep(2)
+        # sleep(2)
         logs_raw = self.driver.get_log("performance")
         
         datas = (
