@@ -41,6 +41,7 @@ class ChatGPT:
         verbose (bool, optional): Whether to enable verbose logging. Defaults to False.
         headless (bool, optional): Whether to run the browser in headless mode. Defaults to False.
         chrome_args (list): Additional arguments for the Chrome browser. Defaults to [].
+        browser_executable_path (str, optional)
 
     Raises:
     ----------
