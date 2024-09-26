@@ -1115,20 +1115,21 @@ class ChatGPT:
         js_script = f"""
         async function getDownloadUrl() {{
             const accessToken = window.__remixContext.state.loaderData.root.clientBootstrap.session.accessToken;
-            alert(accessToken);
+            //alert(accessToken);
             const response = await fetch('https://chat.openai.com/backend-api/conversation/{conversation_id}/attachment/{file_id}/download', {{
                 headers: {{
                     'Authorization': `Bearer ${{accessToken}}`
                 }}
             }});
             const data = await response.json();
-            return data.download_url;
+            return data;
         }}
         return getDownloadUrl();
         """
-
+        res=""
         try:
-            download_url = self.driver.execute_script(js_script)
+            res = self.driver.execute_script(js_script)
+            download_url = res.download_url
         except Exception as e:
             self.logger.error(f"Failed to fetch download URL: {str(e)}")
             sleep(60)
@@ -1136,6 +1137,7 @@ class ChatGPT:
 
         if not download_url:
             self.logger.debug("Failed to get download URL")
+            self.logger.debug(res)
             sleep(60)
             return None
 
