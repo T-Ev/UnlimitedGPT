@@ -1074,8 +1074,8 @@ class ChatGPT:
         ret = self.driver.execute_cdp_cmd("Network.getResponseBody", {"requestId": data})
         response_data = loads(ret["body"])
         # Print the response data for debugging
-        self.logger.debug("Response data:")
-        self.logger.debug(response_data)
+        # self.logger.debug("Response data:")
+        # self.logger.debug(response_data)
         # Extract relevant information from each message
         messages = []
         for node_id, node in response_data["mapping"].items():
