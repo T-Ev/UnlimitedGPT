@@ -435,7 +435,16 @@ class ChatGPT:
             Conversations: A list of conversations.
         """
         self.logger.debug("Getting conversations...")
-        sleep(1.5)  # Wait for 2 seconds to ensure the page is fully loaded
+        # sleep(1.5)  # Wait for 2 seconds to ensure the page is fully loaded
+        try:
+            WebDriverWait(self.driver, 10).until_not(
+                EC.presence_of_element_located(CGPTV.history)
+            )
+        except TimeoutException:  # type: ignore
+            self.logger.debug("Refreshing page due to timeout exception...")
+            self.driver.refresh()
+            sleep(2)
+            pass
         logs_raw = self.driver.get_log("performance")
         
         datas = (

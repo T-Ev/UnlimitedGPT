@@ -53,6 +53,7 @@ class ChatGPTVariables:
         "Settings",
     )
     theme_button = (By.CSS_SELECTOR, "button[role='combobox']")
+    history = (By.CSS_SELECTOR, "div[data-testid='history-item']")
     data_controls = (
         By.CSS_SELECTOR,
         'button[data-state="inactive"][id^="radix-"][id$="-trigger-DataControls"]',
