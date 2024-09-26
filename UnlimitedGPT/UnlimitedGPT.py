@@ -429,18 +429,8 @@ class ChatGPT:
             Conversations: A list of conversations.
         """
         self.logger.debug("Getting conversations...")
-        # sleep(1.5)  # Wait for 2 seconds to ensure the page is fully loaded
-        logs_raw = self.driver.get_log("performance")
-        for _ in range(10):  # Retry up to 10 times
-            if sum(1 for log in logs_raw if "/backend-api/conversations" in log["message"]) > 3:
-                break
-            logs_raw = self.driver.get_log("performance")
-            sleep(0.2)
-        else:
-            self.logger.debug("Refreshing the driver...")
-            self.driver.refresh()
-            sleep(2)
-        sleep(0.2)
+        sleep(1.5)  # Wait for 2 seconds to ensure the page is fully loaded
+        logs_raw = self.driver.get_log("performance")       
         
         datas = (
             log_["params"]["requestId"]
