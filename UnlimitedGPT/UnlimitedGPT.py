@@ -436,12 +436,8 @@ class ChatGPT:
         """
         self.logger.debug("Getting conversations...")
         logs_raw = self.driver.get_log("performance")
-        self.logger.debug(f"Prev length: {len(logs_raw)}")
-        self.logger.debug("Refreshing the page to get the latest conversations...")
-        # self.driver.refresh()
-        sleep(1)  # Wait for 2 seconds to ensure the page is fully loaded
+        sleep(0.5)  # Wait for 2 seconds to ensure the page is fully loaded
         logs_raw = self.driver.get_log("performance")
-        self.logger.debug(f"Refeshed length: {len(logs_raw)}")
         
         datas = (
             log_["params"]["requestId"]
