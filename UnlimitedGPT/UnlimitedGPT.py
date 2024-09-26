@@ -76,7 +76,7 @@ class ChatGPT:
             raise ValueError("Invalid proxy format")
 
         self._init_browser()
-        finalize(self, self.__del__)
+        # finalize(self, self.__del__)
 
     def __del__(self) -> None:
         """
