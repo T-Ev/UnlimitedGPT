@@ -1117,8 +1117,10 @@ class ChatGPT:
             const accessToken = window.__remixContext.state.loaderData.root.clientBootstrap.session.accessToken;
             //alert(accessToken);
             const response = await fetch('https://chat.openai.com/backend-api/conversation/{conversation_id}/attachment/{file_id}/download', {{
+                method: 'GET',
                 headers: {{
-                    'Authorization': `Bearer ${{accessToken}}`
+                    'Authorization': `Bearer ${{accessToken}}`,
+                    'Accept': 'application/json'
                 }}
             }});
             const data = await response.json();
