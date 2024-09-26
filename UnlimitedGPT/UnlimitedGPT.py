@@ -1006,3 +1006,16 @@ class ChatGPT:
         self._check_blocking_elements()
         self._conversation_id = conversation_id
         self.logger.debug(f"Switched conversation to {conversation_id}")
+
+    def print_available_log_types(self):
+        """
+        Prints all available log types.
+        """
+        log_types = self.driver.log_types
+        self.logger.info(f"Available log types: {log_types}")
+        for log_type in log_types:
+            try:
+                logs = self.driver.get_log(log_type)
+                self.logger.info(f"Log type '{log_type}' has {len(logs)} entries")
+            except Exception as e:
+                self.logger.error(f"Error getting logs for type '{log_type}': {str(e)}")
