@@ -1077,6 +1077,7 @@ class ChatGPT:
         # Print the response data for debugging
         # self.logger.debug("Response data:")
         # self.logger.debug(response_data)
+        sleep(0.5)
         # Extract relevant information from each message
         messages = []
         for node_id, node in response_data["mapping"].items():
