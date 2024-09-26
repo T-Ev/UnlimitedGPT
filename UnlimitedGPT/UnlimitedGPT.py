@@ -432,7 +432,7 @@ class ChatGPT:
         # sleep(1.5)  # Wait for 2 seconds to ensure the page is fully loaded
         logs_raw = self.driver.get_log("performance")
         for _ in range(10):  # Retry up to 10 times
-            if any("/backend-api/conversations" in log["message"] for log in logs_raw):
+            if sum(1 for log in logs_raw if "/backend-api/conversations" in log["message"]) > 2:
                 break
             logs_raw = self.driver.get_log("performance")
             sleep(0.2)
