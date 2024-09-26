@@ -1130,10 +1130,12 @@ class ChatGPT:
             download_url = self.driver.execute_script(js_script)
         except Exception as e:
             self.logger.error(f"Failed to fetch download URL: {str(e)}")
+            sleep(60)
             return None
 
         if not download_url:
             self.logger.debug("Failed to get download URL")
+            sleep(60)
             return None
 
         # Download the audio file
