@@ -1205,10 +1205,12 @@ class ChatGPT:
             )
         except Exception as e:
             self.logger.error(f"Failed to fetch download URL: {str(e)}")
+            sleep(120)
             return None
 
         if not download_url:
             self.logger.debug("Failed to get download URL")
+            sleep(120)
             return None
 
         # Create the audio directory if it doesn't exist
