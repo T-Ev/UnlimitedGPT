@@ -285,7 +285,7 @@ class ChatGPT:
         self.logger.debug("Authorization is valid")
 
         self.logger.debug("Closing tab...")
-        self.driver.close()
+        # self.driver.close()
         self.driver.switch_to.window(original_window)
 
     def _get_conversation_id(self):
