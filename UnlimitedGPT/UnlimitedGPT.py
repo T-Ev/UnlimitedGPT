@@ -437,11 +437,11 @@ class ChatGPT:
         self.logger.debug("Getting conversations...")
         # sleep(1.5)  # Wait for 2 seconds to ensure the page is fully loaded
         try:
-            start_time = time.time()
+            start_time = time()
             WebDriverWait(self.driver, 10).until_not(
                 EC.presence_of_element_located(CGPTV.history)
             )
-            end_time = time.time()
+            end_time = time()
             self.logger.debug(f"Time taken: {end_time - start_time} seconds")
         except TimeoutException:  # type: ignore
             self.logger.debug("Refreshing page due to timeout exception...")
