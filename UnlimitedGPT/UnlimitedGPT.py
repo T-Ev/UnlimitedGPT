@@ -1030,3 +1030,64 @@ class ChatGPT:
                 self.logger.info(f"Log type '{log_type}' has {len(logs)} entries")
             except Exception as e:
                 self.logger.error(f"Error getting logs for type '{log_type}': {str(e)}")
+    def get_conversation_details(self, conversation_id: str):
+        """
+        Get details of a specific conversation.
+
+        Args:
+        ----------
+            conversation_id (str): The ID of the conversation to retrieve.
+
+        Returns:
+        ----------
+            Optional[List[Dict[str, Any]]]: A list of messages in the conversation, or None if unsuccessful.
+        """
+        self.logger.debug(f"Getting details for conversation {conversation_id}...")
+        
+        # Open a new tab with the conversation URL
+        self.driver.execute_script(f"window.open('https://chat.openai.com/c/{conversation_id}', '_blank');")
+        
+        # Switch to the new tab
+        self.driver.switch_to.window(self.driver.window_handles[-1])
+        
+        # Wait for the page to load
+        sleep(2)
+        
+        # Get performance logs
+        logs_raw = self.driver.get_log("performance")
+        
+        # Find the relevant network request
+        data = None
+        for log in reversed([loads(lr["message"])["message"] for lr in logs_raw]):
+            if (log["method"] == "Network.responseReceived" and
+                "json" in log["params"]["response"]["mimeType"] and
+                log["params"]["response"]["status"] == 200 and
+                "/backend-api/conversation/" in log["params"]["response"]["url"]):
+                data = log["params"]["requestId"]
+                break
+        
+        if not data:
+            self.logger.debug("Could not find conversation details")
+            return None
+        
+        # Get the response body
+        ret = self.driver.execute_cdp_cmd("Network.getResponseBody", {"requestId": data})
+        response_data = loads(ret["body"])
+        
+        # Extract relevant information from each message
+        messages = []
+        for node_id, node in response_data["mapping"].items():
+            if "message" in node and node["message"]:
+                message = node["message"]
+                messages.append({
+                    "id": message["id"],
+                    "create_time": message["create_time"],
+                    "text": message["content"]["parts"][0] if message["content"]["content_type"] == "text" else message["content"]["parts"][1]["text"] if message["content"]["content_type"] == "multimodal_text" else "",
+                    "asset_pointer": message["content"]["parts"][0]["asset_pointer"].replace("sediment://", "") if message["content"]["content_type"] == "multimodal_text" and "asset_pointer" in message["content"]["parts"][0] else None
+                })
+        
+        # Close the tab and switch back to the original tab
+        self.driver.close()
+        self.driver.switch_to.window(self.driver.window_handles[0])
+        
+        return messages
