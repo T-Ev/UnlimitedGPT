@@ -436,7 +436,12 @@ class ChatGPT:
         """
         self.logger.debug("Getting conversations...")
         logs_raw = self.driver.get_log("performance")
-        self.logger.debug(logs_raw)
+        count = sum(
+            1
+            for lrr in logs_raw
+            if "/backend-api/conversations" in lrr["message"]
+        )
+        self.logger.debug(f"Number of instances of '/backend-api/conversations' in logs_raw: {count}")
         datas = (
             log_["params"]["requestId"]
             for log_ in reversed([loads(lr["message"])["message"] for lr in logs_raw])
