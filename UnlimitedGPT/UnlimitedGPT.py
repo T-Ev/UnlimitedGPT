@@ -1115,6 +1115,7 @@ class ChatGPT:
         js_script = f"""
         async function getDownloadUrl() {{
             const accessToken = window.__remixContext.state.loaderData.root.clientBootstrap.session.accessToken;
+            alert(accessToken);
             const response = await fetch('https://chat.openai.com/backend-api/conversation/{conversation_id}/attachment/{file_id}/download', {{
                 headers: {{
                     'Authorization': `Bearer ${{accessToken}}`
