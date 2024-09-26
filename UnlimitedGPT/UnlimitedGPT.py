@@ -155,6 +155,13 @@ class ChatGPT:
         options = ChromeOptions()
         options.add_argument("--window-size=1024,768")
         options.add_argument("--disable-popup-blocking")
+        # Enable performance logging
+        options.add_experimental_option("w3c", False)
+        options.add_experimental_option("prefs", {
+            "loggingPrefs": {
+                "performance": "ALL"  # Enable all performance logs
+            }
+        })
         if self._proxy:
             options.add_argument(f"--proxy-server={self._proxy}")
         for arg in self._chrome_args:
