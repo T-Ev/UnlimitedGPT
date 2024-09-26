@@ -5,12 +5,13 @@ import platform
 from json import loads
 from logging import DEBUG, Formatter, StreamHandler, getLogger
 from os import environ
+from pathlib import Path 
 from platform import system
 from threading import Thread
 from time import sleep, time
 from typing import Literal, Optional
 from weakref import finalize
-
+import requests
 from selenium.common.exceptions import (
     NoSuchElementException,
     StaleElementReferenceException,
@@ -1093,3 +1094,67 @@ class ChatGPT:
         self.driver.switch_to.window(self.driver.window_handles[0])
         
         return messages
+    
+    def download_audio_attachment(self, conversation_id: str, file_id: str) -> Optional[str]:
+        """
+        Download an audio attachment from a conversation.
+
+        Args:
+        ----------
+            conversation_id (str): The ID of the conversation.
+            file_id (str): The ID of the file to download.
+
+        Returns:
+        ----------
+            Optional[str]: The path to the downloaded audio file, or None if unsuccessful.
+        """
+        self.logger.debug(f"Downloading audio attachment for conversation {conversation_id}, file {file_id}...")
+
+        # JavaScript to fetch the download URL
+        js_script = f"""
+        async function getDownloadUrl() {{
+            const accessToken = window.__remixContext.state.loaderData.root.clientBootstrap.session.accessToken;
+            const response = await fetch('https://chat.openai.com/backend-api/conversation/{conversation_id}/attachment/{file_id}/download', {{
+                headers: {{
+                    'Authorization': `Bearer ${{accessToken}}`
+                }}
+            }});
+            const data = await response.json();
+            return data.download_url;
+        }}
+        return getDownloadUrl();
+        """
+
+        try:
+            download_url = self.driver.execute_script(js_script)
+        except Exception as e:
+            self.logger.error(f"Failed to fetch download URL: {str(e)}")
+            return None
+
+        if not download_url:
+            self.logger.debug("Failed to get download URL")
+            return None
+
+        # Download the audio file
+        try:
+            response = requests.get(download_url)
+            response.raise_for_status()
+
+            # Create the audio directory if it doesn't exist
+            audio_dir = Path("audio")
+            audio_dir.mkdir(exist_ok=True)
+
+            # Generate a filename based on conversation_id and file_id
+            file_name = f"{conversation_id}_{file_id}.mp3"
+            file_path = audio_dir / file_name
+
+            # Save the audio file
+            with open(file_path, "wb") as f:
+                f.write(response.content)
+
+            self.logger.debug(f"Audio file downloaded and saved to {file_path}")
+            return str(file_path)
+
+        except requests.RequestException as e:
+            self.logger.error(f"Failed to download audio file: {str(e)}")
+            return None
