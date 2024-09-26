@@ -169,7 +169,7 @@ class ChatGPT:
             self.driver.execute_cdp_cmd(
                 "Network.setCookie",
                 {
-                    "domain": "chat.openai.com",
+                    "domain": "chatgpt.com",
                     "path": "/",
                     "name": "__Secure-next-auth.session-token",
                     "value": self._session_token,
